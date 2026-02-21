@@ -1,0 +1,67 @@
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+
+##### Bar appearance #####
+
+sketchybar --bar position=top height=32 blur_radius=30 color=0xff313440
+
+##### Defaults #####
+
+default=(
+  padding_left=5
+  padding_right=5
+  icon.font="Hack Nerd Font:Bold:14.0"
+  label.font="Hack Nerd Font:Bold:12.0"
+  icon.color=0xffffffff
+  label.color=0xffffffff
+  icon.padding_left=4
+  icon.padding_right=4
+  label.padding_left=4
+  label.padding_right=4
+)
+sketchybar --default "${default[@]}"
+
+##### Left items #####
+
+sketchybar --add event aerospace_workspace_change
+
+for sid in $(aerospace list-workspaces --all); do
+    sketchybar --add item space.$sid left \
+        --subscribe space.$sid aerospace_workspace_change \
+        --set space.$sid \
+        background.corner_radius=5 \
+        background.height=21 \
+        background.border_width=2 \
+        background.padding_left=2 \
+        background.padding_right=2 \
+        label.padding_left=7 \
+        label.padding_right=8 \
+        label="$sid" \
+        icon.padding_left=0 \
+        icon.padding_right=0 \
+        click_script="aerospace workspace $sid" \
+        script="$CONFIG_DIR/plugins/aerospace.sh $sid"
+done
+
+##### Right items #####
+
+sketchybar --add item clock right \
+           --set clock update_freq=10 icon= icon.color=0xff94bfce script="$PLUGIN_DIR/clock.sh"
+
+sketchybar --add item volume right \
+           --set volume script="$PLUGIN_DIR/volume.sh" \
+           icon.color=0xff94bfce \
+           --subscribe volume volume_change
+
+sketchybar --add item battery right \
+           --set battery update_freq=120 script="$PLUGIN_DIR/battery.sh" \
+           icon.color=0xff94bfce \
+           --subscribe battery system_woke power_source_change
+
+sketchybar --add item cputemp right \
+           --set cputemp update_freq=10 icon= icon.color=0xff94bfce script="$PLUGIN_DIR/cpu_temp.sh"
+
+sketchybar --add item weather right \
+           --set weather update_freq=300 script="$PLUGIN_DIR/weather.sh"
+
+##### Force all scripts to run the first time (never do this in a script) #####
+sketchybar --update
