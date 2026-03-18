@@ -30,7 +30,7 @@ This repository uses [GNU Stow](https://www.gnu.org/software/stow/) to manage an
    - `sketchybar/.config/sketchybar` to `~/.config/sketchybar`
    - `hammerspoon/.hammerspoon` to `~/.hammerspoon`
 
-   Alternatively, stow everything at once: `$ stow *`
+   Alternatively, stow everything at once: `$ stow */`
 
 
 ## Content
