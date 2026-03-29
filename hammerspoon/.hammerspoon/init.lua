@@ -1,3 +1,3 @@
 hs.hotkey.bind({"cmd"}, "return", function()
-    hs.application.launchOrFocus("Warp")
+    hs.application.launchOrFocus("Alacritty")
 end)
