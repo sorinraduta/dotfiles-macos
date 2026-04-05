@@ -1,0 +1,14 @@
+{
+    "manifest_version": 3,
+    "name": "New tab dashboard",
+    "version": "1.0",
+    "description": "A custom new tab dashboard for Chrome.",
+    "icons": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+    },
+    "chrome_url_overrides": {
+        "newtab": "index.html"
+    }
+}

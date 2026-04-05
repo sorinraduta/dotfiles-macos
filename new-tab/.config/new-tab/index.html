@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>DARKSAR - Terminal Dashboard</title>
+        <style>
+            :root {
+                --bg: #0a0a1a;
+                --panel-bg: #121228;
+                --text: #c7c7e0;
+                --accent: #00ffcc;
+                --accent2: #ff2c8f;
+                --accent3: #faff0a;
+                --border: #3a3a5a;
+            }
+
+            body {
+                font-family: "Share Tech Mono", monospace;
+                background-color: var(--bg);
+                color: var(--text);
+                margin: 0;
+                padding: 1rem;
+                overflow: hidden;
+                height: 100vh;
+            }
+
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+                color: var(--accent);
+                font-weight: bold;
+            }
+
+            .status-bar {
+                display: flex;
+                gap: 1rem;
+                font-size: 0.8rem;
+            }
+
+            .status-item {
+                display: flex;
+                align-items: center;
+                gap: 0.3rem;
+            }
+
+            .status-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+            }
+
+            .status-dot.online {
+                background-color: var(--accent);
+            }
+
+            .status-dot.vpn {
+                background-color: var(--accent2);
+            }
+
+            .status-dot.monitoring {
+                background-color: var(--accent3);
+            }
+
+            .dashboard {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                grid-template-rows: repeat(6, auto);
+                gap: 1rem;
+                height: calc(100vh - 4rem);
+            }
+
+            .panel {
+                background-color: var(--panel-bg);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                padding: 0.8rem;
+            }
+
+            .panel-title {
+                color: var(--accent);
+                font-size: 0.8rem;
+                margin-bottom: 0.5rem;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 0.3rem;
+            }
+
+            .clock {
+                grid-column: 2 / 4;
+                grid-row: 1 / 3;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-family: "Digital-7", monospace;
+            }
+
+            .time {
+                font-size: 4rem;
+                color: var(--accent);
+                text-shadow: 0 0 10px var(--accent);
+                letter-spacing: 0.3rem;
+            }
+
+            .date {
+                font-size: 1rem;
+                color: var(--text);
+                margin-top: 0.5rem;
+            }
+
+            .system-status {
+                grid-column: 1;
+                grid-row: 1 / 3;
+            }
+
+            .status-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 0.5rem;
+            }
+
+            .progress-bar {
+                width: 60%;
+                height: 8px;
+                background-color: var(--border);
+                border-radius: 4px;
+                margin-top: 0.2rem;
+            }
+
+            .progress-fill {
+                height: 100%;
+                border-radius: 4px;
+            }
+
+            .progress-fill.cpu {
+                width: 19%;
+                background-color: var(--accent);
+            }
+
+            .progress-fill.memory {
+                width: 76%;
+                background-color: var(--accent2);
+            }
+
+            .progress-fill.disk {
+                width: 53%;
+                background-color: var(--accent3);
+            }
+
+            .network-intel {
+                grid-column: 1;
+                grid-row: 3 / 5;
+            }
+
+            .intel-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 0.3rem;
+                font-size: 0.8rem;
+            }
+
+            .pinned {
+                grid-column: 4;
+                grid-row: 1 / 3;
+            }
+
+            .pinned-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .pinned-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem;
+                background-color: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                font-size: 0.8rem;
+            }
+
+            .pinned-icon {
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+            }
+
+            .search-panel {
+                grid-column: 2 / 4;
+                grid-row: 3;
+            }
+
+            .search-tabs {
+                display: flex;
+                gap: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .search-tab {
+                padding: 0.3rem 0.8rem;
+                background-color: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                font-size: 0.8rem;
+                cursor: pointer;
+            }
+
+            .search-tab.active {
+                background-color: var(--accent);
+                color: var(--bg);
+                border-color: var(--accent);
+            }
+
+            .search-bar {
+                width: 100%;
+                padding: 0.5rem;
+                background-color: var(--bg);
+                border: 1px solid var(--accent);
+                border-radius: 4px;
+                font-family: monospace;
+                font-size: 0.9rem;
+            }
+
+            .security-panel {
+                grid-column: 2;
+                grid-row: 4 / 6;
+            }
+
+            .devops-panel {
+                grid-column: 3;
+                grid-row: 4 / 6;
+            }
+
+            .list-item {
+                font-size: 0.8rem;
+                margin-bottom: 0.3rem;
+                padding-left: 1rem;
+            }
+
+            .scratchpad {
+                grid-column: 4;
+                grid-row: 3 / 5;
+            }
+
+            .scratchpad-textarea {
+                width: 100%;
+                height: 70%;
+                background-color: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                padding: 0.5rem;
+                font-family: monospace;
+                font-size: 0.8rem;
+                resize: none;
+            }
+
+            .scratchpad-buttons {
+                display: flex;
+                gap: 0.5rem;
+                margin-top: 0.5rem;
+            }
+
+            .scratchpad-button {
+                padding: 0.3rem 0.6rem;
+                background-color: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                font-size: 0.7rem;
+                cursor: pointer;
+            }
+
+            .wisdom-panel {
+                grid-column: 4;
+                grid-row: 5;
+                font-size: 0.8rem;
+                text-align: center;
+            }
+
+            .calendar-panel {
+                grid-column: 1;
+                grid-row: 5 / 7;
+            }
+
+            .entropy-panel {
+                grid-column: 4;
+                grid-row: 6;
+            }
+        </style>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div class="header">
+            <div class="logo">DARKSAR</div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-dot online"></div>
+                    <span>ONLINE</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot vpn"></div>
+                    <span>VPN ACTIVE</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot monitoring"></div>
+                    <span>MONITORING</span>
+                </div>
+                <span>23:20:09</span>
+                <span>FOCUS</span>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="panel system-status">
+                <div class="panel-title">SYSTEM STATUS</div>
+                <div class="status-item">
+                    <span>CPU</span>
+                    <span>19%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill cpu"></div>
+                </div>
+                <div class="status-item">
+                    <span>MEMORY</span>
+                    <span>76%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill memory"></div>
+                </div>
+                <div class="status-item">
+                    <span>DISK</span>
+                    <span>53%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill disk"></div>
+                </div>
+                <div class="status-item">
+                    <span>NETWORK</span>
+                    <span>26Mb</span>
+                </div>
+            </div>
+
+            <div class="clock panel">
+                <div class="time" id="clock">23:20:09</div>
+                <div class="date">THURSDAY // 19 MAR 2026</div>
+            </div>
+
+            <div class="panel pinned">
+                <div class="panel-title">PINNED</div>
+                <div class="pinned-grid">
+                    <div class="pinned-item">
+                        <div
+                            class="pinned-icon"
+                            style="background-color: var(--accent)"
+                        ></div>
+                        <span>GITHUB</span>
+                    </div>
+                    <div class="pinned-item">
+                        <div
+                            class="pinned-icon"
+                            style="background-color: var(--accent2)"
+                        ></div>
+                        <span>HTB</span>
+                    </div>
+                    <div class="pinned-item">
+                        <div
+                            class="pinned-icon"
+                            style="background-color: var(--accent3)"
+                        ></div>
+                        <span>CYBERCHEF</span>
+                    </div>
+                    <div class="pinned-item">
+                        <div
+                            class="pinned-icon"
+                            style="background-color: var(--accent)"
+                        ></div>
+                        <span>CLAUDE AI</span>
+                    </div>
+                    <div class="pinned-item">
+                        <div
+                            class="pinned-icon"
+                            style="background-color: var(--accent2)"
+                        ></div>
+                        <span>SHODAN</span>
+                    </div>
+                    <div class="pinned-item">
+                        <div
+                            class="pinned-icon"
+                            style="background-color: var(--accent3)"
+                        ></div>
+                        <span>EXPLOITDB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel network-intel">
+                <div class="panel-title">NETWORK INTEL</div>
+                <div class="intel-item">
+                    <span>HOSTNAME</span>
+                    <span>DARKSAR</span>
+                </div>
+                <div class="intel-item">
+                    <span>LOCAL IP</span>
+                    <span>192.168.1.1</span>
+                </div>
+                <div class="intel-item">
+                    <span>GATEWAY</span>
+                    <span>192.168.1.1</span>
+                </div>
+                <div class="intel-item">
+                    <span>DNS</span>
+                    <span>1.1.1.1</span>
+                </div>
+                <div class="intel-item">
+                    <span>UPTIME</span>
+                    <span>00:00:22</span>
+                </div>
+            </div>
+
+            <div class="panel search-panel">
+                <div class="search-tabs">
+                    <div class="search-tab active">GOOGLE</div>
+                    <div class="search-tab">DUCK</div>
+                    <div class="search-tab">SHODAN</div>
+                    <div class="search-tab">GITHUB</div>
+                    <div class="search-tab">XPLOIT</div>
+                </div>
+                <input
+                    type="text"
+                    class="search-bar"
+                    placeholder="> QUERY // SEARCH_ENGINE"
+                />
+            </div>
+
+            <div class="panel security-panel">
+                <div class="panel-title">// SECURITY</div>
+                <div class="list-item">> Exploit-DB</div>
+                <div class="list-item">> NVD / CVEs</div>
+                <div class="list-item">> Shodan</div>
+                <div class="list-item">> VirusTotal</div>
+                <div class="list-item">> GTFOBins</div>
+                <div class="list-item">> LOLBAS</div>
+                <div class="list-item">> HackTricks</div>
+                <div class="list-item">> HackerOne</div>
+            </div>
+
+            <div class="panel devops-panel">
+                <div class="panel-title">// DEV / OPS</div>
+                <div class="list-item">> GitHub</div>
+                <div class="list-item">> GitLab</div>
+                <div class="list-item">> Stack Overflow</div>
+                <div class="list-item">> MDN Web Docs</div>
+                <div class="list-item">> Docker Hub</div>
+                <div class="list-item">> Regex101</div>
+                <div class="list-item">> Crontab Guru</div>
+                <div class="list-item">> Dev Cheatsheets</div>
+            </div>
+
+            <div class="panel scratchpad">
+                <div class="panel-title">SCRATCHPAD</div>
+                <textarea
+                    class="scratchpad-textarea"
+                    placeholder="// scratch notes here
+// persists locally"
+                ></textarea>
+                <div class="scratchpad-buttons">
+                    <button class="scratchpad-button">CLEAR</button>
+                    <button class="scratchpad-button">COPY</button>
+                    <button class="scratchpad-button">COPY DATE</button>
+                </div>
+            </div>
+
+            <div class="panel threat-monitor">
+                <div class="panel-title">THREAT MONITOR</div>
+                <div class="intel-item">
+                    <span>FIREWALL</span>
+                    <span style="color: var(--accent)">ACTIVE</span>
+                </div>
+                <div class="intel-item">
+                    <span>INTRUSIONS</span>
+                    <span style="color: var(--accent)">0 DETECTED</span>
+                </div>
+                <div class="intel-item">
+                    <span>CVE ALERTS</span>
+                    <span style="color: var(--accent3)">3 NEW</span>
+                </div>
+                <div class="intel-item">
+                    <span>DARK WEB</span>
+                    <span style="color: var(--accent)">CLEAN</span>
+                </div>
+                <div class="intel-item">
+                    <span>THREAT LVL</span>
+                    <span style="color: var(--accent)">ALPHA</span>
+                </div>
+            </div>
+
+            <div class="panel tools-osint">
+                <div class="panel-title">// TOOLS / OSINT</div>
+                <div class="list-item">> CyberChef</div>
+                <div class="list-item">> Base64 Decode</div>
+            </div>
+
+            <div class="panel intel-feed">
+                <div class="panel-title">// INTEL FEED</div>
+                <div class="list-item">> Hacker News</div>
+                <div class="list-item">> Bleeding Computer</div>
+            </div>
+
+            <div class="panel wisdom-panel">
+                <div class="panel-title">DAILY WISDOM</div>
+                <p>
+                    "Hacking is not about the tools, it's about the mindset." -
+                    Unknown
+                </p>
+            </div>
+
+            <div class="panel calendar-panel">
+                <div class="panel-title">CALENDAR</div>
+                <!-- Calendar content can be added here -->
+            </div>
+
+            <div class="panel entropy-monitor">
+                <div class="panel-title">ENTROPY MONITOR</div>
+                <!-- Entropy monitor content can be added here -->
+            </div>
+        </div>
+
+        <script>
+            // Update clock
+            function updateClock() {
+                const now = new Date();
+                const timeString = now.toTimeString().slice(0, 8);
+                const dateString = now
+                    .toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                    })
+                    .toUpperCase();
+                document.getElementById("clock").textContent = timeString;
+                document.querySelector(".date").textContent = dateString;
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // Search tab functionality
+            document.querySelectorAll(".search-tab").forEach((tab) => {
+                tab.addEventListener("click", function () {
+                    document
+                        .querySelectorAll(".search-tab")
+                        .forEach((t) => t.classList.remove("active"));
+                    this.classList.add("active");
+                });
+            });
+
+            // Scratchpad buttons
+            document
+                .querySelectorAll(".scratchpad-button")
+                .forEach((button) => {
+                    button.addEventListener("click", function () {
+                        const textarea = document.querySelector(
+                            ".scratchpad-textarea",
+                        );
+                        if (this.textContent === "CLEAR") {
+                            textarea.value = "";
+                        } else if (this.textContent === "COPY") {
+                            textarea.select();
+                            document.execCommand("copy");
+                        } else if (this.textContent === "COPY DATE") {
+                            const now = new Date();
+                            const dateString = now.toLocaleString();
+                            textarea.value += `\n// ${dateString}\n`;
+                        }
+                    });
+                });
+        </script>
+    </body>
+</html>
